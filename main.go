@@ -10,8 +10,8 @@ import (
 
 type Bookmark struct {
 	ID int `json:"id"`
-	Title string `json:"title"`
-	URL string `json:"url"`
+	Title string `json:"title" binding:"required"`
+	URL string `json:"url" binding:"required,url"` //checks non empty feild and valid url
 }
 
 var bookmarks = []Bookmark{}
@@ -51,13 +51,13 @@ func main() {
 				return
 		}
 		newBookmark.ID = nextID
-		nextID++
+		nextID++ // increment nextID for the next bookmark
 
 		bookmarks = append(bookmarks, newBookmark)
-		ctx.JSON(201,newBookmark )
+		ctx.JSON(201,newBookmark ) // return the newly created bookmark with a 201 status code
 	})
 
-	err := router.Run(":8300")
+	err := router.Run(":8300") // listen and serve on port 8300
 	if err != nil {
 		println("The router encountered an error while running")
 	}
