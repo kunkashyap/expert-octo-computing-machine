@@ -46,7 +46,7 @@ func main() {
 	router.GET("/bookmarks", func(ctx *gin.Context){	})
 
 	//Read one bookmark
-	router.GET("/bookmark/:id", func(ctx *gin.Context) {
+	router.GET("/bookmarks/:id", func(ctx *gin.Context) {
 		//convert the id from string to int
 		id, err := strconv.Atoi(ctx.Param("id")) //convert the id from string to int
 		if err != nil { //error handling if the id is not a valid integer
