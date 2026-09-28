@@ -1,7 +1,7 @@
 package main
 
 import (
-	"strings"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,26 +21,85 @@ var nextID = 1
 func main() {
 	router := gin.Default()
 
-	router.GET("/", func(ctx *gin.Context) { //c is gin context
-		ctx.JSON(200, gin.H{"message": "hello from gin!"})
+	// router.GET("/", func(ctx *gin.Context) { //c is gin context
+	// 	ctx.JSON(200, gin.H{"message": "hello from gin!"})
+	// })
+
+	// router.GET("/hello/:name", func(ctx *gin.Context) {
+	// 	// Path Parameter
+	// 	name := ctx.Param("name")
+
+	// 	//Query String
+	// 	loud := ctx.DefaultQuery("loud", "false")
+
+	// 	greeting := "hello" + name
+
+	// 	if loud == "true" {
+	// 		greeting = strings.ToUpper(greeting)
+	// 	}
+
+	// 	ctx.JSON(200, gin.H{"greeting": greeting})
+	// })
+
+	//Read all bookmarks
+
+	router.GET("/bookmarks", func(ctx *gin.Context){	})
+
+	//Read one bookmark
+	router.GET("/bookmark/:id", func(ctx *gin.Context) {
+		//convert the id from string to int
+		id, err := strconv.Atoi(ctx.Param("id")) //convert the id from string to int
+		if err != nil { //error handling if the id is not a valid integer
+			ctx.JSON(400, gin.H{"error": "Invalid bookmark ID"})
+			return
+		}
+		// Find the bookmark by ID
+		for _, bookmark := range bookmarks { //if the bookmark ID matches the requested ID, return it
+			if bookmark.ID == id { 
+				ctx.JSON(200, bookmark)
+				return
+			}
+		}
+		ctx.JSON(404, gin.H{"error": "Bookmark not found"})
 	})
 
-	router.GET("/hello/:name", func(ctx *gin.Context) {
-		// Path Parameter
-		name := ctx.Param("name")
+	//Update a bookmark
+	router.PUT("/bookmarks/:id", func(ctx *gin.Context) {
+			id,_ := strconv.Atoi(ctx.Param("id"))
+			var updatedBookmark Bookmark
+			if err := ctx.ShouldBindJSON(&updatedBookmark); err != nil {
+				ctx.JSON(400, gin.H{"error": err.Error()})
+				return
+			}
+			for i, bookmark := range bookmarks {
+				if bookmark.ID == id {
+					bookmarks[i] = updatedBookmark
+					ctx.JSON(200, updatedBookmark)
+					return
+				}
+			}
+			ctx.JSON(404, gin.H{"error": "Bookmark not found"})
+		})
 
-		//Query String
-		loud := ctx.DefaultQuery("loud", "false")
-
-		greeting := "hello" + name
-
-		if loud == "true" {
-			greeting = strings.ToUpper(greeting)
+	//Delete a bookmark
+	router.DELETE("/bookmarks/:id", func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+		if err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid bookmark ID"})
+			return
 		}
 
-		ctx.JSON(200, gin.H{"greeting": greeting})
+		for i, bookmark := range bookmarks {
+			if bookmark.ID == id {
+				bookmarks = append(bookmarks[:i], bookmarks[i+1:]...)
+				ctx.JSON(200, gin.H{"message": "Bookmark deleted"})
+				return
+			}
+		}
+		ctx.JSON(404, gin.H{"error": "Bookmark not found"})
 	})
 
+	//For creating a new bookmark
 	router.POST("/bookmarks", func(ctx *gin.Context) {
 		var newBookmark Bookmark
 
